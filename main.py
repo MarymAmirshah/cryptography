@@ -1,61 +1,105 @@
 import random
+import numpy as np
 
 
-def generate_shares(S, t, n, p):
-    # Generate a random polynomial of degree t-1 with S as the constant term
-    coefficients = [S] + [random.randint(0, p - 1) for _ in range(t - 1)]
+def is_prime(x: int):
+    if x < 2:
+        return False
+    elif x == 2:
+        return True
+    else:
+        for i in range(2, int(np.sqrt(x)), 2):
+            if x % i == 0:
+                return False
 
-    # Function to evaluate polynomial at a given x
-    def eval_polynomial(x):
-        result = 0
-        for i, coeff in enumerate(coefficients):
-            result = (result + coeff * pow(x, i, p)) % p
-        return result
-
-    # Generate n shares (x, y)
-    shares = [(i, eval_polynomial(i)) for i in range(1, n + 1)]
-
-    return shares
+    return True
 
 
-# Example usage
-S = 1234  # Secret
-t = 3  # Threshold
-n = 5  # Number of shares
-p = 7919  # Prime number larger than S
+def share_secret():
+    print("----SECRET SHARING----")
+    n = 0
+    t = 1
+    while n < t:
+        print("n= ", end="")
+        n = int(input())
+        print("t= ", end="")
+        t = int(input())
+        if n <= t:
+            print("t should be less or equal than n")
+    S = 1
+    p = 0
+    while p < S:
+        print("S= ", end="")
+        S = int(input())
+        while not is_prime(p):
+            print("p= ", end="")
+            p = int(input())
+            if not is_prime(p):
+                print("please enter a prime number for p")
+        if S >= p:
+            print("please choose a bigger p than S")
 
-shares = generate_shares(S, t, n, p)
-print("Shares (x, y):")
-for share in shares:
-    print(share)
+    a = np.zeros(t)
+    a[0] = S
+    for i in range(1, t):
+        a[i] = random.randint(-10, 10)
+
+    x = np.zeros(n)
+    for i in range(0, n):
+        x[i] = i+1
+
+    y = np.zeros(n)
+    for i in range(0, n):
+        tmp = 0
+        for j in range(0, t):
+            tmp += a[j] * pow(x[i], j)
+
+        y[i] = tmp.__mod__(p)
+
+    for i in range(0, n):
+        print(f'({x[i]}, {y[i]})')
 
 
-def reconstruct_secret(shares, t, p):
-    # Function to compute Lagrange basis polynomial
-    def lagrange_basis(j, x):
-        basis = 1
-        for m in range(t):
-            if m != j:
-                numerator = (x - shares[m][0]) % p
-                denominator = (shares[j][0] - shares[m][0]) % p
-                inv_denominator = pow(denominator, -1, p)  # Modular multiplicative inverse
-                basis = (basis * numerator * inv_denominator) % p
-        return basis
-
-    # Reconstruct the secret using Lagrange interpolation
-    secret = 0
-    for j in range(t):
-        y_j = shares[j][1]
-        secret = (secret + y_j * lagrange_basis(j, 0)) % p
-
-    return secret
+def mod_inverse(a: int, p: int):
+    for i in range(1, p):
+        x = a*i
+        if x.__mod__(p) == 1:
+            return i
 
 
-# Example usage
-t = 3
-n = 5
-p = 7919
-shares = [(1, 2345), (2, 6789), (3, 5678)]  # Example shares (x, y)
+def get_secret():
+    print("----SECRET REVEALING----")
+    print("t= ", end="")
+    t = int(input())
+    p = 0
+    while not is_prime(p):
+        print("p= ", end="")
+        p = int(input())
+        if not is_prime(p):
+            print("please enter a prime number for p")
 
-reconstructed_secret = reconstruct_secret(shares, t, p)
-print("Reconstructed Secret:", reconstructed_secret)
+    y = np.zeros(t)
+    x = np.zeros(t)
+    for i in range(0, t):
+        print(f'x[{i+1}]= ', end="")
+        x[i] = int(input())
+        print(f'y[{i+1}]= ', end="")
+        y[i] = int(input())
+
+    S = 0
+    for i in range(0, t):
+        tmp = 1
+        for j in range(0, t):
+            if i != j:
+                tmp1 = x[j] - x[i]
+                tmp1 = mod_inverse(tmp1, p)
+                tmp2 = x[j] * tmp1
+                tmp2 = tmp2.__mod__(p)
+                tmp *= tmp2
+        S += (y[i]*tmp).__mod__(p)
+
+    print(f'S= {S.__mod__(p)}')
+
+
+share_secret()
+get_secret()
