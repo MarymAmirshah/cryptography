@@ -1,5 +1,6 @@
 import random
 import numpy as np
+from colorama import Fore, Style
 
 
 def is_prime(x: int) -> bool:
@@ -21,21 +22,21 @@ def share_secret():
     # Input the number of shares (n) and the threshold (t)
     while True:
         try:
-            n = int(input("Enter the number of shares (n): "))
-            t = int(input("Enter the threshold (t): "))
+            n = int(input(Fore.YELLOW + "Enter the number of shares (n): " + Style.RESET_ALL))
+            t = int(input(Fore.YELLOW + "Enter the threshold (t): " + Style.RESET_ALL))
             if n >= t:
                 break
             else:
-                print("n should be greater than or equal to t.")
+                print(Fore.RED + "n should be greater than or equal to t." + Style.RESET_ALL)
         except ValueError:
-            print("Please enter valid integers.")
-
+            print(Fore.RED + "Please enter valid integers." + Style.RESET_ALL)
     # Input the secret (S) and a prime number (p)
     while True:
         try:
-            S = int(input("Enter the secret (S): "))
+            S = int(input(Fore.YELLOW + "Enter the secret (S): " + Style.RESET_ALL))
             while True:
-                p = int(input("Enter a prime number (p) greater than S: "))
+                p = int(input(Fore.YELLOW + "Enter a prime number (p) greater than S: " + Style.RESET_ALL))
+
                 if is_prime(p) and p > S:
                     break
                 else:
@@ -57,9 +58,9 @@ def share_secret():
         y[i] = sum(a[j] * pow(x[i], j) for j in range(t)) % p
 
     # Print the shares
-    print("\nGenerated shares (x, y):")
+    print(Fore.GREEN + "\nGenerated shares (x, y):" + Style.RESET_ALL)
     for i in range(n):
-        print(f"({int(x[i])}, {int(y[i])})")
+        print(Fore.BLUE + f"({int(x[i])}, {int(y[i])})" + Style.RESET_ALL)
 
 
 def mod_inverse(a: int, p: int) -> int:
